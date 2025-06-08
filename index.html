@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soft Serve Machine Tracker</title>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top for better content flow */
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Soft shadow */
+            padding: 2.5rem; /* Increased padding */
+            max-width: 900px; /* Wider container */
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem; /* Increased gap between sections */
+        }
+        .status-button {
+            border-radius: 9999px; /* Pill shape */
+            padding: 0.75rem 1.5rem; /* Generous padding */
+            font-weight: 700; /* Bold text */
+            text-align: center;
+            cursor: default; /* Not clickable */
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .green-status {
+            background-color: #10B981; /* Tailwind green-500 */
+            color: white;
+        }
+        .yellow-status {
+            background-color: #FBBF24; /* Tailwind yellow-400 */
+            color: #374151; /* Darker text for contrast */
+        }
+        .machine-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            flex: 1;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb; /* Light border */
+            border-radius: 1rem; /* Slightly rounded corners */
+            background-color: #f9fafb; /* Off-white background for sections */
+        }
+        .action-button {
+            border-radius: 0.75rem; /* Rounded corners */
+            padding: 1rem 1.5rem; /* Generous padding */
+            font-weight: 600; /* Semi-bold text */
+            color: white;
+            background-color: #4F46E5; /* Tailwind indigo-600 */
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .action-button:hover {
+            background-color: #4338CA; /* Tailwind indigo-700 */
+            transform: translateY(-2px); /* Slight lift effect */
+        }
+        .action-button:active {
+            transform: translateY(0); /* Press down effect */
+        }
+        .message-box {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .message-box.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Confirmation Modal Styles */
+        .confirmation-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6); /* Darker overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1500; /* Between normal content and loading overlay */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .confirmation-modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .confirmation-modal-content {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transform: translateY(-20px); /* Slight lift effect on show */
+            transition: transform 0.3s ease-in-out;
+        }
+        .confirmation-modal-overlay.show .confirmation-modal-content {
+            transform: translateY(0);
+        }
+        .confirmation-modal-content p {
+            font-size: 1.5rem; /* Larger text */
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: #374151; /* Dark gray text */
+        }
+        .confirmation-modal-buttons {
+            display: flex;
+            justify-content: space-around;
+            gap: 1rem;
+        }
+        .confirmation-modal-buttons button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            flex: 1; /* Make buttons take equal space */
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+        }
+        .confirmation-modal-buttons button.yes {
+            background-color: #10B981; /* Green for Yes */
+            color: white;
+        }
+        .confirmation-modal-buttons button.yes:hover {
+            background-color: #059669; /* Darker green */
+            transform: translateY(-1px);
+        }
+        .confirmation-modal-buttons button.no {
+            background-color: #EF4444; /* Red for No */
+            color: white;
+        }
+        .confirmation-modal-buttons button.no:hover {
+            background-color: #DC2626; /* Darker red */
+            transform: translateY(-1px);
+        }
+
+        /* Responsive layout for machine sections */
+        @media (min-width: 768px) {
+            .machine-sections-wrapper {
+                flex-direction: row;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Main Status Display -->
+        <div class="flex justify-center mb-6">
+            <div id="overall-status" class="status-button green-status">Loading status...</div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-8 machine-sections-wrapper">
+            <!-- Left Side: Oatly Matcha Mix -->
+            <div class="machine-section">
+                <h2 class="text-2xl font-bold text-gray-800 text-center mb-2">Oatly Matcha Mix</h2>
+                <p id="matcha-refill-status" class="text-sm text-gray-600 text-center mb-4">Loading refill status...</p>
+                <div class="flex flex-col gap-4">
+                    <button class="action-button" data-side="Oatly Matcha" data-action="25% refilled" data-amount="2.5">25% refilled (2.5L)</button>
+                    <button class="action-button" data-side="Oatly Matcha" data-action="50% or more refilled" data-amount="5">50% or more refilled (+5L)</button>
+                    <button class="action-button bg-green-500 hover:bg-green-600" data-side="Oatly Matcha" data-action="Pasteurized">Pasteurized</button>
+                    <button class="action-button bg-gray-500 hover:bg-gray-600" data-side="Oatly Matcha" data-action="Stand-By">Stand-By</button>
+                </div>
+            </div>
+
+            <!-- Right Side: Vanilla Mix -->
+            <div class="machine-section">
+                <h2 class="text-2xl font-bold text-gray-800 text-center mb-2">Vanilla Mix</h2>
+                <p id="vanilla-refill-status" class="text-sm text-gray-600 text-center mb-4">Loading refill status...</p>
+                <div class="flex flex-col gap-4">
+                    <button class="action-button" data-side="Vanilla" data-action="25% refilled" data-amount="2.5">25% refilled (2.5L)</button>
+                    <button class="action-button" data-side="Vanilla" data-action="50% or more refilled" data-amount="5">50% or more refilled (+5L)</button>
+                    <button class="action-button bg-green-500 hover:bg-green-600" data-side="Vanilla" data-action="Pasteurized">Pasteurized</button>
+                    <button class="action-button bg-gray-500 hover:bg-gray-600" data-side="Vanilla" data-action="Stand-By">Stand-By</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Box -->
+    <div id="message-box" class="message-box"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal-overlay" class="confirmation-modal-overlay">
+        <div class="confirmation-modal-content">
+            <p id="confirmation-message"></p>
+            <div class="confirmation-modal-buttons">
+                <button class="yes" id="confirm-yes">Yes</button>
+                <button class="no" id="confirm-no">No</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // IMPORTANT: Replace this with your deployed Google Apps Script Web App URL
+        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyHS6EofV7oeSVe_IRvycOGEFE1034ApFCDKqSEcDpEqozOFIGbMHfY9Rk0urqi8HXl6w/exec'; 
+
+        const overallStatusButton = document.getElementById('overall-status');
+        const messageBox = document.getElementById('message-box');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const confirmationModalOverlay = document.getElementById('confirmation-modal-overlay');
+        const confirmationMessage = document.getElementById('confirmation-message');
+        const confirmYesButton = document.getElementById('confirm-yes');
+        const confirmNoButton = document.getElementById('confirm-no');
+        const vanillaRefillStatus = document.getElementById('vanilla-refill-status');
+        const matchaRefillStatus = document.getElementById('matcha-refill-status');
+
+
+        // Variable to store the pending action details
+        let pendingAction = null;
+
+        // Function to show a temporary message
+        function showMessage(message, duration = 3000) {
+            messageBox.textContent = message;
+            messageBox.classList.add('show');
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, duration);
+        }
+
+        // Function to show/hide loading overlay
+        function showLoading(show) {
+            if (show) {
+                loadingOverlay.classList.add('show');
+            } else {
+                loadingOverlay.classList.remove('show');
+            }
+        }
+
+        // Function to show the confirmation modal
+        function showConfirmationModal(side, action, amount) {
+            pendingAction = { side, action, amount };
+            let message;
+            if (action.includes('refilled')) {
+                message = `${side} ${action}?`;
+            } else {
+                message = `${side} in ${action}?`;
+            }
+            confirmationMessage.textContent = message;
+            confirmationModalOverlay.classList.add('show');
+        }
+
+        // Function to hide the confirmation modal
+        function hideConfirmationModal() {
+            confirmationModalOverlay.classList.remove('show');
+            pendingAction = null; // Clear pending action
+        }
+
+        // Function to update the overall pasteurization and individual refill status displays
+        function updateMachineStatuses(vanillaStatus, matchaStatus) {
+            // Update overall pasteurization status
+            if (vanillaStatus.pasteurize || matchaStatus.pasteurize) {
+                overallStatusButton.classList.remove('green-status');
+                overallStatusButton.classList.add('yellow-status');
+                overallStatusButton.textContent = 'Pasteurize Tonight';
+            } else {
+                overallStatusButton.classList.remove('yellow-status');
+                overallStatusButton.classList.add('green-status');
+                overallStatusButton.textContent = 'Only Stand-By Tonight';
+            }
+
+            // Update individual refill statuses
+            vanillaRefillStatus.textContent = vanillaStatus.refilledToday ? 'Last refilled TODAY' : 'NOT refilled today';
+            matchaRefillStatus.textContent = matchaStatus.refilledToday ? 'Last refilled TODAY' : 'NOT refilled today';
+        }
+
+        // Function to fetch the current status from Google Apps Script
+        async function fetchCurrentStatus() {
+            showLoading(true);
+            try {
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log('Current status fetched:', data);
+                // Call the updated function to handle both pasteurization and refill status
+                updateMachineStatuses(data.vanilla, data.matcha);
+                showMessage('Status updated successfully!', 2000);
+            } catch (error) {
+                console.error('Error fetching current status:', error);
+                showMessage('Error fetching status: ' + error.message, 5000);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Function to send an action to Google Apps Script
+        async function sendAction(side, action, amount = 0) {
+            showLoading(true);
+            try {
+                const payload = {
+                    side: side,
+                    action: action,
+                    amount: amount
+                };
+                console.log('Sending payload:', payload);
+
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log('Action response:', data);
+                // Call the updated function to handle both pasteurization and refill status
+                updateMachineStatuses(data.vanilla, data.matcha);
+                showMessage(`${side} - ${action} logged!`, 2000);
+            } catch (error) {
+                console.error('Error sending action:', error);
+                showMessage('Error logging action: ' + error.message, 5000);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Add event listeners to all action buttons
+        document.querySelectorAll('.action-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const side = button.dataset.side;
+                const action = button.dataset.action;
+                const amount = parseFloat(button.dataset.amount || '0');
+                showConfirmationModal(side, action, amount); // Show confirmation modal instead of direct sendAction
+            });
+        });
+
+        // Event listener for 'Yes' button in confirmation modal
+        confirmYesButton.addEventListener('click', () => {
+            if (pendingAction) {
+                sendAction(pendingAction.side, pendingAction.action, pendingAction.amount);
+            }
+            hideConfirmationModal();
+        });
+
+        // Event listener for 'No' button in confirmation modal
+        confirmNoButton.addEventListener('click', () => {
+            hideConfirmationModal();
+            showMessage('Action cancelled.', 2000);
+        });
+
+        // Fetch initial status when the page loads
+        document.addEventListener('DOMContentLoaded', fetchCurrentStatus);
+    </script>
+</body>
+</html>
