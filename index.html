@@ -4,75 +4,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soft Serve Machine Tracker</title>
-    <!-- Inter Font -->
+    <!-- Inter Font (Google Fonts) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- Tailwind CSS CDN -->
+    <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Base styles for the body */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6; /* Light gray background */
             display: flex;
-            justify-content: center;
-            align-items: flex-start; /* Align to top for better content flow */
-            min-height: 100vh;
-            padding: 20px;
-            box-sizing: border-box;
+            justify-content: center; /* Center horizontally */
+            align-items: flex-start; /* Align to top for better content flow, especially on mobile */
+            min-height: 100vh; /* Full viewport height */
+            padding: 20px; /* Padding around the main container */
+            box-sizing: border-box; /* Include padding in element's total width and height */
         }
+        /* Styles for the main container of the app */
         .container {
             background-color: #ffffff;
             border-radius: 1.5rem; /* More rounded corners */
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Soft shadow */
-            padding: 2.5rem; /* Increased padding */
-            max-width: 900px; /* Wider container */
-            width: 100%;
+            padding: 2.5rem; /* Increased padding inside the container */
+            max-width: 900px; /* Maximum width for the container */
+            width: 100%; /* Full width up to max-width */
             display: flex;
-            flex-direction: column;
-            gap: 2rem; /* Increased gap between sections */
+            flex-direction: column; /* Stack sections vertically by default */
+            gap: 2rem; /* Increased gap between major sections */
         }
+        /* Styles for the overall status button (top display) */
         .status-button {
-            border-radius: 9999px; /* Pill shape */
+            border-radius: 9999px; /* Pill shape for roundness */
             padding: 0.75rem 1.5rem; /* Generous padding */
             font-weight: 700; /* Bold text */
             text-align: center;
-            cursor: default; /* Not clickable */
-            transition: all 0.2s ease-in-out;
+            cursor: default; /* Indicates it's not clickable */
+            transition: all 0.2s ease-in-out; /* Smooth transitions for background/color changes */
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
+        /* Green status for "Only Stand-By Tonight" */
         .green-status {
             background-color: #10B981; /* Tailwind green-500 */
             color: white;
         }
+        /* Yellow status for "Pasteurize Tonight" */
         .yellow-status {
             background-color: #FBBF24; /* Tailwind yellow-400 */
             color: #374151; /* Darker text for contrast */
         }
+        /* Styles for individual machine sections */
         .machine-section {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
-            flex: 1;
+            gap: 1.5rem; /* Gap between elements inside the section */
+            flex: 1; /* Allows sections to grow and shrink in flex container */
             padding: 1.5rem;
             border: 1px solid #e5e7eb; /* Light border */
             border-radius: 1rem; /* Slightly rounded corners */
             background-color: #f9fafb; /* Off-white background for sections */
         }
+        /* Styles for action buttons within machine sections */
         .action-button {
             border-radius: 0.75rem; /* Rounded corners */
             padding: 1rem 1.5rem; /* Generous padding */
             font-weight: 600; /* Semi-bold text */
             color: white;
-            background-color: #4F46E5; /* Tailwind indigo-600 */
-            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            background-color: #4F46E5; /* Tailwind indigo-600 (default blue) */
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out; /* Hover/active effects */
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
         .action-button:hover {
-            background-color: #4338CA; /* Tailwind indigo-700 */
+            background-color: #4338CA; /* Tailwind indigo-700 on hover */
             transform: translateY(-2px); /* Slight lift effect */
         }
         .action-button:active {
             transform: translateY(0); /* Press down effect */
         }
+        /* Styles for the temporary message box (toast notification) */
         .message-box {
             position: fixed;
             bottom: 20px;
@@ -84,47 +92,49 @@
             border-radius: 0.75rem;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
+            opacity: 0; /* Hidden by default */
+            visibility: hidden; /* Hidden by default */
             transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
         }
         .message-box.show {
-            opacity: 1;
-            visibility: visible;
+            opacity: 1; /* Show */
+            visibility: visible; /* Show */
         }
+        /* Styles for the full-screen loading overlay */
         .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 2000;
-            opacity: 0;
-            visibility: hidden;
+            z-index: 2000; /* Above everything else */
+            opacity: 0; /* Hidden by default */
+            visibility: hidden; /* Hidden by default */
             transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
         }
         .loading-overlay.show {
-            opacity: 1;
-            visibility: visible;
+            opacity: 1; /* Show */
+            visibility: visible; /* Show */
         }
+        /* Spinner animation for loading */
         .spinner {
             border: 4px solid rgba(255, 255, 255, 0.3);
             border-top: 4px solid #fff;
             border-radius: 50%;
             width: 40px;
             height: 40px;
-            animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite; /* Spin animation */
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
 
-        /* Confirmation Modal Styles */
+        /* Styles for the confirmation modal overlay */
         .confirmation-modal-overlay {
             position: fixed;
             top: 0;
@@ -136,14 +146,15 @@
             justify-content: center;
             align-items: center;
             z-index: 1500; /* Between normal content and loading overlay */
-            opacity: 0;
-            visibility: hidden;
+            opacity: 0; /* Hidden by default */
+            visibility: hidden; /* Hidden by default */
             transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
         }
         .confirmation-modal-overlay.show {
-            opacity: 1;
-            visibility: visible;
+            opacity: 1; /* Show */
+            visibility: visible; /* Show */
         }
+        /* Styles for the confirmation modal content box */
         .confirmation-modal-content {
             background-color: #ffffff;
             padding: 2.5rem;
@@ -156,19 +167,21 @@
             transition: transform 0.3s ease-in-out;
         }
         .confirmation-modal-overlay.show .confirmation-modal-content {
-            transform: translateY(0);
+            transform: translateY(0); /* Return to original position when shown */
         }
         .confirmation-modal-content p {
-            font-size: 1.5rem; /* Larger text */
+            font-size: 1.5rem; /* Larger text for the confirmation message */
             font-weight: 600;
             margin-bottom: 2rem;
             color: #374151; /* Dark gray text */
         }
+        /* Button container for Yes/No in modal */
         .confirmation-modal-buttons {
             display: flex;
             justify-content: space-around;
             gap: 1rem;
         }
+        /* Individual Yes/No buttons in modal */
         .confirmation-modal-buttons button {
             padding: 0.75rem 1.5rem;
             border-radius: 0.75rem;
@@ -182,7 +195,7 @@
             color: white;
         }
         .confirmation-modal-buttons button.yes:hover {
-            background-color: #059669; /* Darker green */
+            background-color: #059669; /* Darker green on hover */
             transform: translateY(-1px);
         }
         .confirmation-modal-buttons button.no {
@@ -190,11 +203,11 @@
             color: white;
         }
         .confirmation-modal-buttons button.no:hover {
-            background-color: #DC2626; /* Darker red */
+            background-color: #DC2626; /* Darker red on hover */
             transform: translateY(-1px);
         }
 
-        /* Responsive layout for machine sections */
+        /* Responsive layout for machine sections (switches to row on larger screens) */
         @media (min-width: 768px) {
             .machine-sections-wrapper {
                 flex-direction: row;
@@ -204,13 +217,13 @@
 </head>
 <body>
     <div class="container">
-        <!-- Main Status Display -->
+        <!-- Main Status Display (Pasteurize Tonight / Only Stand-By Tonight) -->
         <div class="flex justify-center mb-6">
             <div id="overall-status" class="status-button green-status">Loading status...</div>
         </div>
 
         <div class="flex flex-col md:flex-row gap-8 machine-sections-wrapper">
-            <!-- Left Side: Oatly Matcha Mix -->
+            <!-- Left Side: Oatly Matcha Mix Section -->
             <div class="machine-section">
                 <h2 class="text-2xl font-bold text-gray-800 text-center mb-2">Oatly Matcha Mix</h2>
                 <p id="matcha-refill-status" class="text-sm text-gray-600 text-center mb-4">Loading refill status...</p>
@@ -222,7 +235,7 @@
                 </div>
             </div>
 
-            <!-- Right Side: Vanilla Mix -->
+            <!-- Right Side: Vanilla Mix Section -->
             <div class="machine-section">
                 <h2 class="text-2xl font-bold text-gray-800 text-center mb-2">Vanilla Mix</h2>
                 <p id="vanilla-refill-status" class="text-sm text-gray-600 text-center mb-4">Loading refill status...</p>
@@ -236,15 +249,15 @@
         </div>
     </div>
 
-    <!-- Message Box -->
+    <!-- Message Box for temporary notifications (e.g., "Logged successfully!") -->
     <div id="message-box" class="message-box"></div>
 
-    <!-- Loading Overlay -->
+    <!-- Loading Overlay for showing when data is being fetched/sent -->
     <div id="loading-overlay" class="loading-overlay">
         <div class="spinner"></div>
     </div>
 
-    <!-- Confirmation Modal -->
+    <!-- Confirmation Modal (Popup for Yes/No questions) -->
     <div id="confirmation-modal-overlay" class="confirmation-modal-overlay">
         <div class="confirmation-modal-content">
             <p id="confirmation-message"></p>
@@ -257,8 +270,10 @@
 
     <script>
         // IMPORTANT: Replace this with your deployed Google Apps Script Web App URL
-   const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzJ2fdwCIqqmnO9WOZk5ZMqULtUCzCAzjRtylBnQRo3MwWqTGIGh5NXJbSPuvTWi145lg/exec';
+        // Example: 'https://script.google.com/macros/s/AKfycbz_YOUR_UNIQUE_ID_HERE_g4322/exec'
+        const GOOGLE_APPS_SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE'; 
 
+        // Get references to DOM elements
         const overallStatusButton = document.getElementById('overall-status');
         const messageBox = document.getElementById('message-box');
         const loadingOverlay = document.getElementById('loading-overlay');
@@ -269,11 +284,14 @@
         const vanillaRefillStatus = document.getElementById('vanilla-refill-status');
         const matchaRefillStatus = document.getElementById('matcha-refill-status');
 
-
-        // Variable to store the pending action details
+        // Variable to store the pending action details before confirmation
         let pendingAction = null;
 
-        // Function to show a temporary message
+        /**
+         * Displays a temporary message box (toast notification).
+         * @param {string} message The message to display.
+         * @param {number} [duration=3000] How long to show the message in milliseconds.
+         */
         function showMessage(message, duration = 3000) {
             messageBox.textContent = message;
             messageBox.classList.add('show');
@@ -282,7 +300,10 @@
             }, duration);
         }
 
-        // Function to show/hide loading overlay
+        /**
+         * Shows or hides the full-screen loading overlay.
+         * @param {boolean} show True to show, false to hide.
+         */
         function showLoading(show) {
             if (show) {
                 loadingOverlay.classList.add('show');
@@ -291,28 +312,39 @@
             }
         }
 
-        // Function to show the confirmation modal
+        /**
+         * Displays the confirmation modal before an action is sent.
+         * @param {string} side The machine side (e.g., 'Vanilla', 'Oatly Matcha').
+         * @param {string} action The action description (e.g., '25% refilled').
+         * @param {number} amount The associated amount for refill actions.
+         */
         function showConfirmationModal(side, action, amount) {
-            pendingAction = { side, action, amount };
+            pendingAction = { side, action, amount }; // Store action details
             let message;
             if (action.includes('refilled')) {
-                message = `${side} ${action}?`;
+                message = `${side} ${action}?`; // E.g., "Vanilla 25% refilled?"
             } else {
-                message = `${side} in ${action}?`;
+                message = `${side} in ${action}?`; // E.g., "Oatly Matcha in Stand-By?"
             }
-            confirmationMessage.textContent = message;
-            confirmationModalOverlay.classList.add('show');
+            confirmationMessage.textContent = message; // Set confirmation text
+            confirmationModalOverlay.classList.add('show'); // Show the modal
         }
 
-        // Function to hide the confirmation modal
+        /**
+         * Hides the confirmation modal and clears pending action.
+         */
         function hideConfirmationModal() {
             confirmationModalOverlay.classList.remove('show');
-            pendingAction = null; // Clear pending action
+            pendingAction = null; // Clear pending action to prevent accidental re-submission
         }
 
-        // Function to update the overall pasteurization and individual refill status displays
+        /**
+         * Updates the display for overall pasteurization status and individual refill statuses.
+         * @param {object} vanillaStatus Object containing vanilla machine's pasteurize and refilledToday flags.
+         * @param {object} matchaStatus Object containing matcha machine's pasteurize and refilledToday flags.
+         */
         function updateMachineStatuses(vanillaStatus, matchaStatus) {
-            // Update overall pasteurization status
+            // Update overall pasteurization status button style and text
             if (vanillaStatus.pasteurize || matchaStatus.pasteurize) {
                 overallStatusButton.classList.remove('green-status');
                 overallStatusButton.classList.add('yellow-status');
@@ -323,42 +355,52 @@
                 overallStatusButton.textContent = 'Only Stand-By Tonight';
             }
 
-            // Update individual refill statuses
+            // Update individual refill statuses displayed below machine names
             vanillaRefillStatus.textContent = vanillaStatus.refilledToday ? 'Last refilled TODAY' : 'NOT refilled today';
             matchaRefillStatus.textContent = matchaStatus.refilledToday ? 'Last refilled TODAY' : 'NOT refilled today';
         }
 
-        // Function to fetch the current status from Google Apps Script
+        /**
+         * Fetches the current machine status from the Google Apps Script.
+         */
         async function fetchCurrentStatus() {
-            showLoading(true);
+            showLoading(true); // Show loading indicator
             try {
+                // Send GET request to Apps Script
                 const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
                     method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json', // Indicate JSON content
                     },
                 });
 
+                // Check if the HTTP response was successful
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
                 }
-                const data = await response.json();
+                const data = await response.json(); // Parse JSON response
                 console.log('Current status fetched:', data);
-                // Call the updated function to handle both pasteurization and refill status
+                // Update the UI with fetched statuses
                 updateMachineStatuses(data.vanilla, data.matcha);
-                showMessage('Status updated successfully!', 2000);
+                showMessage('Status updated successfully!', 2000); // Show success message
             } catch (error) {
                 console.error('Error fetching current status:', error);
-                showMessage('Error fetching status: ' + error.message, 5000);
+                showMessage('Error fetching status: ' + error.message, 5000); // Show error message
             } finally {
-                showLoading(false);
+                showLoading(false); // Hide loading indicator
             }
         }
 
-        // Function to send an action to Google Apps Script
+        /**
+         * Sends an action (refill, pasteurize, standby) to the Google Apps Script for logging and status update.
+         * @param {string} side The machine side (e.g., 'Vanilla', 'Oatly Matcha').
+         * @param {string} action The action description (e.g., '25% refilled').
+         * @param {number} [amount=0] The refill amount in liters (default to 0 for non-refill actions).
+         */
         async function sendAction(side, action, amount = 0) {
-            showLoading(true);
+            showLoading(true); // Show loading indicator
             try {
+                // Prepare payload for POST request
                 const payload = {
                     side: side,
                     action: action,
@@ -366,55 +408,57 @@
                 };
                 console.log('Sending payload:', payload);
 
+                // Send POST request to Apps Script
                 const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json', // Indicate JSON content
                     },
-                    body: JSON.stringify(payload),
+                    body: JSON.stringify(payload), // Send payload as JSON string
                 });
 
+                // Check if the HTTP response was successful
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
                 }
-                const data = await response.json();
+                const data = await response.json(); // Parse JSON response
                 console.log('Action response:', data);
-                // Call the updated function to handle both pasteurization and refill status
+                // Update the UI with the latest statuses from the Apps Script response
                 updateMachineStatuses(data.vanilla, data.matcha);
-                showMessage(`${side} - ${action} logged!`, 2000);
+                showMessage(`${side} - ${action} logged!`, 2000); // Show success message
             } catch (error) {
                 console.error('Error sending action:', error);
-                showMessage('Error logging action: ' + error.message, 5000);
+                showMessage('Error logging action: ' + error.message, 5000); // Show error message
             } finally {
-                showLoading(false);
+                showLoading(false); // Hide loading indicator
             }
         }
 
-        // Add event listeners to all action buttons
+        // Add event listeners to all action buttons to show confirmation modal
         document.querySelectorAll('.action-button').forEach(button => {
             button.addEventListener('click', () => {
                 const side = button.dataset.side;
                 const action = button.dataset.action;
                 const amount = parseFloat(button.dataset.amount || '0');
-                showConfirmationModal(side, action, amount); // Show confirmation modal instead of direct sendAction
+                showConfirmationModal(side, action, amount); // Show confirmation modal
             });
         });
 
-        // Event listener for 'Yes' button in confirmation modal
+        // Event listener for 'Yes' button in confirmation modal: proceeds with action
         confirmYesButton.addEventListener('click', () => {
             if (pendingAction) {
                 sendAction(pendingAction.side, pendingAction.action, pendingAction.amount);
             }
-            hideConfirmationModal();
+            hideConfirmationModal(); // Hide modal
         });
 
-        // Event listener for 'No' button in confirmation modal
+        // Event listener for 'No' button in confirmation modal: cancels action
         confirmNoButton.addEventListener('click', () => {
-            hideConfirmationModal();
-            showMessage('Action cancelled.', 2000);
+            hideConfirmationModal(); // Hide modal
+            showMessage('Action cancelled.', 2000); // Inform user
         });
 
-        // Fetch initial status when the page loads
+        // Fetch initial status when the page finishes loading
         document.addEventListener('DOMContentLoaded', fetchCurrentStatus);
     </script>
 </body>
